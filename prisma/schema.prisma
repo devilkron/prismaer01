@@ -1,0 +1,126 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "mysql"
+    url      = env("DATABASE_URL")
+}
+
+enum USER {
+    STUDENT
+    TEACHER
+}
+
+model User {
+    User_id       Int           @id @default(autoincrement())
+    User_role     USER
+    User_username String
+    User_password String
+    User_parent   User_parent[]
+    Register      Register[]
+    student       Student       @relation(fields: [Student_id], references: [Student_id], onDelete: Cascade, onUpdate: Cascade)
+    Student_id    Int
+    teacher       Teacher       @relation(fields: [Teacher_id], references: [Teacher_id], onDelete: Cascade, onUpdate: Cascade)
+    Teacher_id    Int
+}
+
+model Student {
+    Student_id       Int                @id @default(autoincrement())
+    Student_name     String
+    Student_phone    String
+    Student_address  String
+    Student_bd       DateTime           @db.Date
+    Student_email    String
+    Student_identity Int
+    Student_img      String
+    user_parent      User_parent        @relation(fields: [User_parent_id], references: [User_parent_id], onDelete: Cascade, onUpdate: Cascade)
+    User_parent_id   Int
+    sect             Section            @relation(fields: [Sect_id], references: [Sect_id], onDelete: Cascade, onUpdate: Cascade)
+    Sect_id          Int
+    Register_Subject Register_Subject[]
+    User             User[]
+}
+
+model Teacher {
+    Teacher_id       Int                @id @default(autoincrement())
+    Teacher_name     String
+    Teacher_phone    String
+    Teacher_address  String
+    Teacher_bd       DateTime           @db.Date
+    Teacher_email    String
+    Teacher_identity Int
+    Teacher_img      String
+    subject          Subject            @relation(fields: [Sub_id], references: [Sub_id])
+    Sub_id           Int
+    section          Section            @relation(fields: [Sect_id], references: [Sect_id])
+    Sect_id          Int
+    Register_Subject Register_Subject[]
+    User             User[]
+}
+
+model Parent {
+    Parent_id       Int           @id @default(autoincrement())
+    Parent_name     String
+    Parent_phone    String
+    Parent_age      Int
+    Parent_status   String
+    Parent_job      String
+    Parent_identity Int
+    User_parent     User_parent[]
+}
+
+model Major {
+    Major_id   Int       @id @default(autoincrement())
+    Major_name String
+    Major_type String
+    Subject    Subject[]
+}
+
+model Subject {
+    Sub_id   Int       @id @default(autoincrement())
+    Sub_name String
+    Sub_day  String
+    Sub_time DateTime  @db.Time()
+    major    Major     @relation(fields: [Major_id], references: [Major_id], onDelete: Cascade, onUpdate: Cascade)
+    Major_id Int
+    Teacher  Teacher[]
+}
+
+model Section {
+    Sect_id     Int       @id @default(autoincrement())
+    Sect_number String
+    class       Class     @relation(fields: [Class_id], references: [Class_id], onDelete: Cascade, onUpdate: Cascade)
+    Class_id    Int
+    Teacher     Teacher[]
+    Student     Student[]
+}
+
+model Class {
+    Class_id     Int       @id @default(autoincrement())
+    Class_number String
+    Section      Section[]
+}
+
+model User_parent {
+    User_parent_id Int       @id @default(autoincrement())
+    parent         Parent    @relation(fields: [Parent_id], references: [Parent_id], onDelete: Cascade, onUpdate: Cascade)
+    Parent_id      Int
+    user           User      @relation(fields: [User_id], references: [User_id], onDelete: Cascade, onUpdate: Cascade)
+    User_id        Int
+    Student        Student[]
+}
+
+model Register {
+    Reg_id  Int  @id @default(autoincrement())
+    user    User @relation(fields: [User_id], references: [User_id], onDelete: Cascade, onUpdate: Cascade)
+    User_id Int
+}
+
+model Register_Subject {
+    Reg_Sub_id Int     @id @default(autoincrement())
+    teacher    Teacher @relation(fields: [Teacher_id], references: [Teacher_id], onDelete: Cascade, onUpdate: Cascade)
+    Teacher_id Int
+    student    Student @relation(fields: [Student_id], references: [Student_id], onDelete: Cascade, onUpdate: Cascade)
+    Student_id Int
+}
