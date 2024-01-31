@@ -7,120 +7,98 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-enum USER {
-    STUDENT
-    TEACHER
+enum ctype {
+    PRIMARY1
+    PRIMARY2
+    SECONDARY1
+    SECONDARY2
 }
 
-model User {
-    User_id       Int           @id @default(autoincrement())
-    User_role     USER
-    User_username String
-    User_password String
-    User_parent   User_parent[]
-    Register      Register[]
-    student       Student       @relation(fields: [Student_id], references: [Student_id], onDelete: Cascade, onUpdate: Cascade)
-    Student_id    Int
-    teacher       Teacher       @relation(fields: [Teacher_id], references: [Teacher_id], onDelete: Cascade, onUpdate: Cascade)
-    Teacher_id    Int
+enum mtype {
+    MATHSCI
+    ARTMATH
+    ARTENG
+    ARTSOC //ศิลป์-สังคม
+    ARTFREE // ศิลป์-ทั่วไป
 }
 
-model Student {
-    Student_id       Int                @id @default(autoincrement())
-    Student_name     String
-    Student_phone    String
-    Student_address  String
-    Student_bd       DateTime           @db.Date
-    Student_email    String
-    Student_identity Int
-    Student_img      String
-    user_parent      User_parent        @relation(fields: [User_parent_id], references: [User_parent_id], onDelete: Cascade, onUpdate: Cascade)
-    User_parent_id   Int
-    sect             Section            @relation(fields: [Sect_id], references: [Sect_id], onDelete: Cascade, onUpdate: Cascade)
-    Sect_id          Int
-    Register_Subject Register_Subject[]
-    User             User[]
-}
-
-model Teacher {
-    Teacher_id       Int                @id @default(autoincrement())
-    Teacher_name     String
-    Teacher_phone    String
-    Teacher_address  String
-    Teacher_bd       DateTime           @db.Date
-    Teacher_email    String
-    Teacher_identity Int
-    Teacher_img      String
-    subject          Subject            @relation(fields: [Sub_id], references: [Sub_id])
-    Sub_id           Int
-    section          Section            @relation(fields: [Sect_id], references: [Sect_id])
-    Sect_id          Int
-    Register_Subject Register_Subject[]
-    User             User[]
-}
-
-model Parent {
-    Parent_id       Int           @id @default(autoincrement())
-    Parent_name     String
-    Parent_phone    String
-    Parent_age      Int
-    Parent_status   String
-    Parent_job      String
-    Parent_identity Int
-    User_parent     User_parent[]
-}
-
-model Major {
-    Major_id   Int       @id @default(autoincrement())
-    Major_name String
-    Major_type String
-    Subject    Subject[]
-}
-
-model Subject {
-    Sub_id   Int       @id @default(autoincrement())
-    Sub_name String
-    Sub_day  String
-    Sub_time DateTime  @db.Time()
-    major    Major     @relation(fields: [Major_id], references: [Major_id], onDelete: Cascade, onUpdate: Cascade)
-    Major_id Int
-    Teacher  Teacher[]
-}
-
-model Section {
-    Sect_id     Int       @id @default(autoincrement())
-    Sect_number String
-    class       Class     @relation(fields: [Class_id], references: [Class_id], onDelete: Cascade, onUpdate: Cascade)
-    Class_id    Int
-    Teacher     Teacher[]
-    Student     Student[]
+enum statustype {
+    W8
+    AGREE
+    REJECT
 }
 
 model Class {
-    Class_id     Int       @id @default(autoincrement())
-    Class_number String
-    Section      Section[]
+    class_id   Int          @id @default(autoincrement())
+    class_type ctype
+    enrollment enrollment[]
+    student    student[]
+
+    @@map("class")
 }
 
-model User_parent {
-    User_parent_id Int       @id @default(autoincrement())
-    parent         Parent    @relation(fields: [Parent_id], references: [Parent_id], onDelete: Cascade, onUpdate: Cascade)
-    Parent_id      Int
-    user           User      @relation(fields: [User_id], references: [User_id], onDelete: Cascade, onUpdate: Cascade)
-    User_id        Int
-    Student        Student[]
+model major {
+    major_id   Int       @id @default(autoincrement())
+    major_type mtype
+    student    student[]
 }
 
-model Register {
-    Reg_id  Int  @id @default(autoincrement())
-    user    User @relation(fields: [User_id], references: [User_id], onDelete: Cascade, onUpdate: Cascade)
-    User_id Int
+model student {
+    std_id              Int          @id @default(autoincrement())
+    std_name            String
+    std_lastname        String
+    std_bd              DateTime     @db.Date
+    std_address         String
+    std_phone           String
+    std_email           String?
+    std_img             String
+    std_identity        Int
+    std_parent_identity Int
+    std_parent_name     String
+    std_parent_lastname String
+    std_parent_phone    String
+    std_parent_status   String
+    std_parent_address  String
+    enrollment          enrollment[]
+    class               Class        @relation(fields: [class_id], references: [class_id], onDelete: Cascade, onUpdate: Cascade)
+    class_id            Int
+    major               major        @relation(fields: [major_id], references: [major_id], onDelete: Cascade, onUpdate: Cascade)
+    major_id            Int
+    history             history[]
 }
 
-model Register_Subject {
-    Reg_Sub_id Int     @id @default(autoincrement())
-    teacher    Teacher @relation(fields: [Teacher_id], references: [Teacher_id], onDelete: Cascade, onUpdate: Cascade)
-    Teacher_id Int
-    student    Student @relation(fields: [Student_id], references: [Student_id], onDelete: Cascade, onUpdate: Cascade)
-    Student_id Int
+model admin {
+    admin_id       Int      @id @default(autoincrement())
+    admin_name     String
+    admin_lastname String
+    admin_phone    String
+    admin_address  String
+    admin_email    String
+    admin_password String
+    admin_identity Int
+    status         status[]
+}
+
+model enrollment {
+    enmt_id  Int     @id @default(autoincrement())
+    std      student @relation(fields: [std_id], references: [std_id], onDelete: Cascade, onUpdate: Cascade)
+    std_id   Int
+    class    Class   @relation(fields: [class_id], references: [class_id], onDelete: Cascade, onUpdate: Cascade)
+    class_id Int
+}
+
+model history {
+    hist_id Int      @id @default(autoincrement())
+    std     student  @relation(fields: [std_id], references: [std_id], onDelete: Cascade, onUpdate: Cascade)
+    std_id  Int
+    status  status[]
+}
+
+model status {
+    status_id     Int        @id @default(autoincrement())
+    status_type   statustype
+    hist          history    @relation(fields: [hist_id], references: [hist_id], onDelete: Cascade, onUpdate: Cascade)
+    hist_id       Int
+    admin         admin      @relation(fields: [admin_id], references: [admin_id],onDelete: Cascade,onUpdate: Cascade)
+    admin_id Int
 }
